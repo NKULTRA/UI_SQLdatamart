@@ -130,9 +130,6 @@ CREATE TABLE payouts (
     scheduled_at DATE NOT NULL,
     status VARCHAR(30) NOT NULL CHECK(status IN ('SCHEDULED', 'PAID', 'FAILED')),
 
-    CONSTRAINT uq_payout_booking_host
-        UNIQUE (booking_id, host_id)
-
     CONSTRAINT fk_payout_booking
         FOREIGN KEY (booking_id)
         REFERENCES bookings (booking_id),
@@ -147,7 +144,131 @@ CREATE TABLE payouts (
 );
 
 -- =============================================================================
+-- -------------------------   overall dimensions    ---------------------------
+-- =============================================================================
+
+
+-- =============================================================================
 -- --------------------------    user dimensions    ----------------------------
 -- =============================================================================
 
 
+-- Create user_contact table
+CREATE TABLE user_contact (
+    contact_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    type VARCHAR(20) NOT NULL CHECK(type IN ('phone', 'email')),
+    value VARCHAR(255) NOT NULL,
+    is_verified BOOLEAN NOT NULL DEFAULT FALSE,
+    is_primary BOOLEAN NOT NULL DEFAULT FALSE,
+
+    CONSTRAINT fk_user_contact_user
+        FOREIGN KEY (user_id)
+        REFERENCES users (user_id),
+
+    CONSTRAINT uq_user_contact
+        UNIQUE (user_id, type, value)
+);
+
+-- Create roles table
+CREATE TABLE roles (
+    role_code VARCHAR(20) PRIMARY KEY,
+    description TEXT,
+
+    CONSTRAINT chk_role_code
+            CHECK (role_code IN ('HOST', 'GUEST'))
+);
+
+-- Create user_roles table
+CREATE TABLE user_roles (
+    user_id INTEGER NOT NULL,
+    role_code VARCHAR(20) NOT NULL,
+
+    CONSTRAINT pk_user_roles
+        PRIMARY KEY (user_id, role_code),
+
+    CONSTRAINT fk_user_roles_user
+        FOREIGN KEY (user_id)
+        REFERENCES users (user_id),
+
+    CONSTRAINT fk_user_roles_role
+        FOREIGN KEY (role_code)
+        REFERENCES roles (role_code)       
+);
+
+-- Create user_photos table
+CREATE TABLE user_photos (
+    photo_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    photo_url VARCHAR(500) NOT NULL,
+    is_profile_photo BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_user_photos_user
+        FOREIGN KEY (user_id)
+        REFERENCES users (user_id)
+);
+
+-- Create user_social_account table
+CREATE TABLE user_social_account (
+    social_account_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    platform VARCHAR(50) NOT NULL CHECK (platform IN ('FACEBOOK', 'INSTAGRAM')),
+    external_id VARCHAR(500) NOT NULL,
+    connected_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_user_social_user
+        FOREIGN KEY (user_id)
+        REFERENCES users (user_id)
+);
+
+-- Create user_social_account table
+CREATE TABLE user_social_connections (
+    connection_id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    connected_user_id INTEGER NOT NULL,
+    platform VARCHAR(50) NOT NULL CHECK (platform IN ('FACEBOOK', 'INSTAGRAM')),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_user_connect_user
+        FOREIGN KEY (user_id)
+        REFERENCES users (user_id),
+
+    CONSTRAINT fk_user_connected_user
+        FOREIGN KEY (connected_user_id)
+        REFERENCES users (user_id),
+
+    CONSTRAINT chk_not_self
+        CHECK (user_id <> connected_user_id)
+);
+
+-- =============================================================================
+-- ------------------------    bookings dimensions    --------------------------
+-- =============================================================================
+
+
+-- Create reviews table
+CREATE TABLE reviews (
+    review_id SERIAL PRIMARY KEY,
+    booking_id INTEGER NOT NULL,
+    reviewer_id INTEGER NOT NULL,
+    reviewee_user_id INTEGER NOT NULL,
+    review_type VARCHAR(30) NOT NULL CHECK(review_type IN ('GUEST_TO_HOST', 'HOST_TO_GUEST')),
+    rating_overall INTEGER NOT NULL CHECK(rating_overall BETWEEN 1 AND 5),
+    rating_cleanliness INTEGER CHECK(rating_cleanliness BETWEEN 1 AND 5),
+    rating_communication INTEGER CHECK(rating_communication BETWEEN 1 AND 5),
+    comment TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_review_booking
+        FOREIGN KEY (booking_id)
+        REFERENCES bookings (booking_id),
+
+    CONSTRAINT fk_reviewer_user
+            FOREIGN KEY (reviewer_id)
+            REFERENCES users (user_id),
+
+    CONSTRAINT fk_reviewee_user
+            FOREIGN KEY (reviewee_user_id)
+            REFERENCES users (user_id)
+);
