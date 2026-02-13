@@ -48,10 +48,7 @@ CREATE TABLE countries (
 -- Create roles table
 CREATE TABLE roles (
     role_code VARCHAR(20) PRIMARY KEY,
-    description TEXT,
-
-    CONSTRAINT chk_role_code
-            CHECK (role_code IN ('HOST', 'GUEST'))
+    description TEXT
 );
 
 -- Create booking_status table
@@ -86,7 +83,7 @@ CREATE TABLE amenities (
         UNIQUE (name)
 );
 
--- Create payment_method table
+-- Create payment_methods table
 CREATE TABLE payment_methods (
     payment_method_id SERIAL PRIMARY KEY,
     method_name VARCHAR(50) NOT NULL,
