@@ -306,9 +306,6 @@ CREATE TABLE listings (
     currency_code CHAR(3) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
-    CONSTRAINT uq_listings_listing_host
-        UNIQUE (listing_id, host_id),
-
     CONSTRAINT fk_listing_user
         FOREIGN KEY (host_id)
         REFERENCES users (user_id),
