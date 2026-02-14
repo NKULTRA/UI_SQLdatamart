@@ -596,7 +596,7 @@ CREATE TABLE earnings_simulation (
         REFERENCES users (user_id),
 
     CONSTRAINT fk_earnings_sim_listings
-        FOREIGN KEY listing_id
+        FOREIGN KEY (listing_id)
         REFERENCES listings (listing_id)       
 );
 
