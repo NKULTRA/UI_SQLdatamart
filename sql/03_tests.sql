@@ -67,6 +67,56 @@ VALUES (21, 'email', 'max.mustermann@gmx.de', TRUE, TRUE);
 
 SELECT * FROM user_contact WHERE user_id = 21;
 
+-- Table user_social_account
+INSERT INTO user_social_account (user_id, platform, external_id)
+VALUES (21, 'INSTAGRAM', 'www.instagram.com');
+
+SELECT * FROM user_social_account WHERE platform = 'INSTAGRAM';
+
+-- Table user_social_connections
+INSERT INTO user_social_connections (user_id, connected_user_id, platform)
+VALUES (21, 2, 'INSTAGRAM');
+
+SELECT * FROM user_social_connections WHERE platform = 'INSTAGRAM';
+
+-- Table user_photos
+INSERT INTO user_photos (user_id, photo_url, is_profile_photo)
+VALUES (21, 'https://example.com/photo.jpg', TRUE);
+
+SELECT * FROM user_photos WHERE user_id = 21;
+
+-- Table addresses
+INSERT INTO addresses (street, house_number, postal_code, city_id, latitude, longitude)
+VALUES
+('Unter den Linden', '12', '10117', 1, 52.5170, 13.3889),
+('Friedrichstraße', '45', '10117', 1, 52.5075, 13.3903),
+('Kurfürstendamm', '101', '10711', 1, 52.5030, 13.3320),
+('Alexanderplatz', '3', '10178', 1, 52.5219, 13.4132),
+('Potsdamer Straße', '88', '10785', 1, 52.4987, 13.3656);
+
+
+SELECT 
+    l.listing_id,
+    l.title,
+    u.first_name,
+    u.last_name,
+    a.street,
+    a.house_number,
+    a.postal_code,
+    c.city_name,
+    co.country_name
+FROM listings l
+JOIN users u 
+    ON u.user_id = l.host_id
+JOIN addresses a 
+    ON a.address_id = l.address_id
+JOIN cities c 
+    ON c.city_id = a.city_id
+JOIN countries co
+    ON co.country_id = c.country_id
+WHERE l.listing_id = 21
+  AND u.first_name = 'Max'
+  AND u.last_name = 'Mustermann';
 
 
 
