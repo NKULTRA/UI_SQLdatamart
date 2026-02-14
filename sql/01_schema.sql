@@ -33,7 +33,7 @@ CREATE TABLE currencies (
 CREATE TABLE countries (
     country_id SERIAL PRIMARY KEY,
     country_name VARCHAR(100) NOT NULL,
-    country_code CHAR(2),
+    country_code CHAR(2) NOT NULL,
 
     CONSTRAINT chk_country_code_uppercase
         CHECK (country_code = UPPER(country_code)),
@@ -596,7 +596,7 @@ CREATE TABLE earnings_simulation (
         REFERENCES users (user_id),
 
     CONSTRAINT fk_earnings_sim_listings
-        FOREIGN KEY (listing_id, host_id)
-        REFERENCES listings (listing_id, host_id)       
+        FOREIGN KEY listing_id
+        REFERENCES listings (listing_id)       
 );
 

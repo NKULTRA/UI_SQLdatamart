@@ -34,9 +34,27 @@ VALUES
 -- ---------------------------
 -- Seed countries (20)
 -- ---------------------------
-INSERT INTO countries (country_name, country_code)
-SELECT 'Country ' || gs, 'C' || lpad(gs::text, 1, '0')
-FROM generate_series(1,20) gs;
+INSERT INTO countries (country_name, country_code) VALUES
+('Germany', 'DE'),
+('Spain', 'ES'),
+('France', 'FR'),
+('Italy', 'IT'),
+('United Kingdom', 'GB'),
+('United States', 'US'),
+('Canada', 'CA'),
+('Australia', 'AU'),
+('Brazil', 'BR'),
+('Mexico', 'MX'),
+('Japan', 'JP'),
+('South Korea', 'KR'),
+('China', 'CN'),
+('India', 'IN'),
+('Switzerland', 'CH'),
+('Netherlands', 'NL'),
+('Sweden', 'SE'),
+('Norway', 'NO'),
+('Denmark', 'DK'),
+('Poland', 'PL');
 
 -- ---------------------------
 -- Seed booking_status (20)
@@ -48,11 +66,27 @@ FROM generate_series(1,20) gs;
 -- ---------------------------
 -- Seed cities (20)
 -- ---------------------------
-INSERT INTO cities (city_name, country_id)
-SELECT
-  'City ' || gs,
-  ((gs - 1) % 20) + 1
-FROM generate_series(1,20) gs;
+INSERT INTO cities (city_name, country_id) VALUES
+('Berlin', 1),
+('Madrid', 2),
+('Paris', 3),
+('Rome', 4),
+('London', 5),
+('New York', 6),
+('Toronto', 7),
+('Sydney', 8),
+('São Paulo', 9),
+('Mexico City', 10),
+('Tokyo', 11),
+('Seoul', 12),
+('Beijing', 13),
+('Mumbai', 14),
+('Zurich', 15),
+('Amsterdam', 16),
+('Stockholm', 17),
+('Oslo', 18),
+('Copenhagen', 19),
+('Warsaw', 20);
 
 -- ---------------------------
 -- Seed addresses (20)
