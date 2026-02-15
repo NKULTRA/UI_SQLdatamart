@@ -114,32 +114,174 @@ JOIN cities c
     ON c.city_id = a.city_id
 JOIN countries co
     ON co.country_id = c.country_id
-WHERE l.listing_id = 21
-  AND u.first_name = 'Max'
-  AND u.last_name = 'Mustermann';
+WHERE l.listing_id = 21;
 
+-- Table cities
+INSERT INTO cities (city_name, country_id) 
+VALUES ('Munich', 1);
 
+SELECT * FROM cities 
+JOIN countries on cities.country_id = countries.country_id 
+WHERE cities.country_id = 1;
 
+-- Table countries
+INSERT INTO countries (country_name, country_code)
+VALUES ('Austria', 'AT');
+
+SELECT * FROM countries;
+
+-- Table amenities
+INSERT INTO amenities (name, description)
+VALUES ('Wi-Fi', 'The listing has free Wi-Fi.');
+
+SELECT * FROM amenities;
+
+-- Table listing_amenities
+INSERT INTO listing_amenities (listing_id, amenity_id)
+VALUES (21, 21);
+
+SELECT l.title, l.description, a.name, a.description
+FROM listings l
+JOIN listing_amenities la on l.listing_id = la.listing_id
+JOIN amenities a on a.amenity_id = la.amenity_id
+WHERE l.listing_id = 21;
+
+-- Table wishlist_items
+INSERT INTO wishlist_items (wishlist_id, listing_id)
+VALUES (20, 21);
+
+SELECT * FROM wishlist_items;
+
+-- Table wishlists
+UPDATE wishlists
+SET user_id = 21, name = 'Summer vacation'
+WHERE wishlist_id = 20;
+
+SELECT * FROM wishlists;
+
+-- Table property_types
+INSERT INTO property_types (name, description)
+VALUES ('Apartment', 'Self-contained residential unit within a building.');
+
+SELECT * FROM property_types ORDER BY property_type_id DESC;
+
+-- Table house_rules
+INSERT INTO house_rules (listing_id, rule_text, rule_type)
+VALUES (21, 'No smoking allowed.', 'SMOKING');
+
+SELECT * FROM house_rules WHERE listing_id = 21;
+
+-- Table listing_calendar
+INSERT INTO listing_calendar (listing_id, date, price_per_night, is_available, min_nights, max_nights)
+VALUES (21, '2026-02-15', 60, TRUE, 1, 12);
+
+SELECT * FROM listing_calendar WHERE listing_id = 21;
+
+-- Table images
+INSERT INTO images (listing_id, image_url)
+VALUES (21, 'https://example.com/listing_21_max_mustermann.jpg');
+
+SELECT * FROM images WHERE listing_id = 21;
+
+-- Table earnings_simulation
+INSERT INTO earnings_simulation (host_id, listing_id, date_from, date_to, estimated_net_income)
+VALUES (21, 21, '2026-02-15', '2026-02-27', 720);
+
+SELECT * FROM earnings_simulation WHERE listing_id = 21;
+
+-- Table messages
+-- preparation for another host / booking / Listing
+INSERT INTO users (first_name, last_name, country_id, default_currency_code)
+VALUES ('Anna', 'Hostmann', 1, 'EUR')
+RETURNING user_id;
+
+INSERT INTO listings (
+  host_id, address_id, property_type_id, title, description,
+  max_guests, bedrooms, beds, bathrooms,
+  base_price_per_night, cleaning_fee, currency_code
+)
+SELECT
+  u.user_id, 1, 1,
+  'Bright Studio in Berlin',
+  'Hosted by Anna Hostmann.',
+  2, 1, 1, 1,
+  90.00, 20.00, 'EUR'
+FROM users u
+WHERE u.first_name = 'Anna' AND u.last_name = 'Hostmann'
+RETURNING listing_id;
+
+INSERT INTO bookings (
+  listing_id, guest_id, check_in_date, check_out_date,
+  num_guests, status_id, total_price, service_fee, currency_code
+)
+SELECT
+  (SELECT listing_id
+   FROM listings l
+   JOIN users u ON u.user_id = l.host_id
+   WHERE u.first_name='Anna' AND u.last_name='Hostmann'
+   ORDER BY l.listing_id DESC
+   LIMIT 1),
+  (SELECT user_id FROM users WHERE first_name='Max' AND last_name='Mustermann' LIMIT 1),
+  '2026-02-10', '2026-02-13',
+  1, 1, 270.00, 15.00, 'EUR'
+RETURNING booking_id;
+
+INSERT INTO messages (booking_id, sender_id, recipient_id, message_text)
 SELECT
   b.booking_id,
-  b.check_in_date,
-  b.check_out_date,
-  l.title AS listing_title,
-  host.user_id AS host_id,
-  host.first_name || ' ' || host.last_name AS host_name,
-  guest.user_id AS guest_id,
-  guest.first_name || ' ' || guest.last_name AS guest_name,
-  bs.status_name,
-  p.payment_id,
-  p.amount AS payment_amount,
-  po.payout_id,
-  po.amount AS payout_amount
+  b.guest_id,
+  l.host_id,
+  'Hi Anna, what is the easiest way to get the key?'
 FROM bookings b
 JOIN listings l ON l.listing_id = b.listing_id
-JOIN users host ON host.user_id = l.host_id
-JOIN users guest ON guest.user_id = b.guest_id
-JOIN booking_status bs ON bs.status_id = b.status_id
-LEFT JOIN payments p ON p.booking_id = b.booking_id
-LEFT JOIN payouts  po ON po.booking_id = b.booking_id
-ORDER BY b.booking_id
-LIMIT 20;
+WHERE b.guest_id <> l.host_id
+ORDER BY b.booking_id DESC
+LIMIT 1;
+
+SELECT *
+FROM messages
+ORDER BY message_id DESC
+LIMIT 1;
+
+-- Table booking_status
+INSERT INTO booking_status (status_name)
+VALUES ('CONFIRMED');
+
+SELECT * FROM booking_status WHERE status_name = 'CONFIRMED';
+
+-- Table reviews
+INSERT INTO reviews (
+  booking_id, reviewer_id, reviewee_user_id, review_type,
+  rating_overall, rating_cleanliness, rating_communication, comment
+)
+SELECT
+    b.booking_id,
+    u_guest.user_id AS reviewer_id,
+    l.host_id       AS reviewee_user_id,
+    'GUEST_TO_HOST',
+    5, 5, 5,
+    'Great host, smooth check-in and very responsive.'
+FROM bookings b
+JOIN users u_guest ON u_guest.user_id = b.guest_id
+JOIN listings l ON l.listing_id = b.listing_id
+WHERE u_guest.first_name = 'Max'
+  AND u_guest.last_name  = 'Mustermann'
+ORDER BY b.booking_id DESC
+LIMIT 1;
+
+SELECT *
+FROM reviews
+ORDER BY review_id DESC;
+
+-- Table payment_methods
+INSERT INTO payment_methods (method_name, provider, is_active)
+VALUES ('CREDIT_CARD', 'VISA', TRUE);
+
+SELECT * FROM payment_methods WHERE method_name = 'CREDIT_CARD';
+
+-- Table currencies
+INSERT INTO currencies (currency_code, currency_name, symbol)
+VALUES ('HKG', 'Hong Kong Dollar', '$')
+ON CONFLICT (currency_code) DO NOTHING;
+
+SELECT * FROM currencies WHERE currency_code = 'HKG';
