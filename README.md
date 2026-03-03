@@ -1,5 +1,5 @@
 1. Install Docker Desktop
-2. Run: docker compose up -d
+2. Run: docker compose up -d (e.g., in VS Code Terminal)
 3. Connect to database (localhost:5432)
 4. Execute:
    - 01_schema.sql
